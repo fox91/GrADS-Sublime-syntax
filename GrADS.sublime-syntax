@@ -1,0 +1,62 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GrADS Script
+file_extensions:
+  - gs
+  - gsf
+scope: source.grads
+contexts:
+  main:
+    - match: \b(say|prompt|pull|if|else|endif|while|endwhile|continue|break|print|exit)\b
+      scope: keyword.control.grads
+    - match: \b(If|Else|Endif|While|Endwhile|EndWhile)\b
+      scope: keyword.control-undeclared.grads
+    - include: support
+    - include: expressions
+    - match: "'"
+      push: string
+    - match: '"'
+      push: string
+    - match: '^(\*|#)'
+      scope: punctuation.definition.comment.grads
+      push: line_comment
+
+    - match: (\-|\+|\*|/|%)
+      scope: keyword.operator.arithmetic.grads
+    - match: (!|&|\|\|)
+      scope: keyword.operator.logical.grads
+    - match: (=|!=|<=|>=|<>|<|>)
+      scope: keyword.operator.comparison.grads
+
+  support:
+    - match: (?i)\b(sqrt|sin|cos|tan|asin|acos|exp|log|log10|abs|if|pow|ave|mag|atan2|hdivg|hcurl|vint|tloop|eloop|aave|scorr|tcorr|tmave|maskout|gr2stn|tvrh2q|tvrh2t|gint|oacres|oabin|smth9|stnave|stnmin|stnmax|skip|const|cdiff|mean|amean|sum|sumg|asum|asumg|atot|grarea|coll2gr|min|max|minloc|maxloc|fndlvl|sregr|tregr|s2g1d|lterp|amin|amax|aminlocx|aminlocy|amaxlocx|amaxlocy)\b
+      scope: support.function.grads
+    - match: (?i)\b(strlen|sublin|subwrd|substr|read|write|close|sys|function)\b
+      scope: support.function.intrinsic.grads
+    - match: (?i)\b(gsfallow|gsfpath)\b
+      scope: support.function.others
+    - match: (?i)\b(math_(log|log10|cos|sin|tan|atan|atan2|sqrt|abs|acosh|asinh|atanh|cosh|sinh|exp|fmod|pow|tanh|acos|asin|format|nint|int|mod|strlen)|valnum|wrdpos)\b
+      scope: support.function.math.grads
+    - match: (?i)\b(query|q|set|swap|draw)\b
+      scope: support.function.commands.grads
+
+  expressions:
+    - match: \b(return)\b
+      scope: keyword.control.grads
+    - match: \b(Return)\b
+      scope: keyword.control-undeclared.grads
+
+  string:
+    - meta_scope: string.quoted.double.grads
+    - match: \\.
+      scope: constant.character.escape.grads
+    - match: '"'
+      pop: true
+    - match: "'"
+      pop: true
+
+  line_comment:
+    - meta_scope: comment.line.grads
+    - match: $
+      pop: true
