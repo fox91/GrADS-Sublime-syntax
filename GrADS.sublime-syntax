@@ -1,6 +1,7 @@
 %YAML 1.2
 ---
 # https://www.sublimetext.com/docs/syntax.html
+# https://web.archive.org/web/20250108195257/http://cola.gmu.edu/grads/gadoc/gadocindex.html
 name: GrADS Script
 scope: source.grads
 version: 2
@@ -9,68 +10,413 @@ file_extensions:
   - gs
   - gsf
 
+variables:
+  # Variable / function names: 1-16 chars, leading letter, letters/digits/underscore.
+  identifier: '[A-Za-z][A-Za-z0-9_]*'
+  # Global variables start with an underscore and persist across the script.
+  identifier_global: '_[A-Za-z0-9_]+'
+
+  # Intrinsic script functions. Derived from the dispatch table in
+  # src/gscrpt.c (gsfunc), which is more complete than the documentation:
+  # string/file ops plus the full math_* family.
+  intrinsic_functions: |-
+    \b(?:substr|subwrd|sublin|wrdpos|strlen|valnum|read|write|close|sys|gsfallow|gsfpath|math_log10|math_log|math_cosh|math_cos|math_sinh|math_sin|math_tanh|math_tan|math_atan2|math_atanh|math_atan|math_acosh|math_acos|math_asinh|math_asin|math_sqrt|math_abs|math_exp|math_fmod|math_pow|math_format|math_nint|math_int|math_mod|math_strlen)\b
+
+  # Commands whose argument is a GrADS data expression. Arithmetic operators are
+  # only highlighted for these, since '-' is a value/range token in most other
+  # commands (e.g. 'set lon -180 180').
+  expr_command_verbs: |-
+    (?i)\b(?:display|define|d)\b
+
+  # First word of a GrADS command issued from a quoted string. The command is
+  # lowercased before dispatch (gauser.c:100 lowcas), so verbs are case-insensitive.
+  command_verbs: |-
+    (?i)\b(?:clear|close|collect|define|disablefwrite|disableprint|disable|display|draw|enableprint|enable|exec|flush|gxprint|grads|help|modify|open|outxwd|pdefwrite|printim|print|query|quit|redrawbutton|redraw|reinit|reset|run|screen|sdfopen|sdfwrite|set|shell|stat|swap|tserbarb|tserwx|undefine|xdfopen|wi|d|q|c)\b
+
+  # GrADS built-in expression / grid functions. These are used *inside* command
+  # strings (e.g. 'd ave(ts,t=1,t=10)'), evaluated by the GrADS expression
+  # engine, not the script interpreter. Derived from the dispatch table in
+  # src/gafunc.c (rtnprs). Case-insensitive: the command is lowercased before the
+  # expression is evaluated (gauser.c:100), so EXP, Log10, MaskOut etc. are valid.
+  grads_functions: |-
+    (?i)\b(?:log10|log|sqrt|sin|cos|tan|asin|acos|exp|abs|if|pow|aave|ave|mag|atan2|hdivg|hcurl|vint|tloop|eloop|scorr|tcorr|tmave|maskout|gr2stn|tvrh2q|tvrh2t|gint|oacres|oabin|smth9|stnave|stnmin|stnmax|skip|const|cdiff|amean|mean|sumg|sum|asumg|asum|atot|grarea|coll2gr|minloc|maxloc|min|max|fndlvl|sregr|tregr|s2g1d|lterp|aminlocx|aminlocy|amaxlocx|amaxlocy|amin|amax)(?=\s*\()
+
+  # Sub-options for set / draw / query commands (second word). Case-insensitive
+  # for the same reason as command_verbs (gauser.c:100 lowcas).
+  command_options: |-
+    (?i)\b(?:lat|lon|lev|time|ens|annot|antialias|arrlab|arrowhead|arrscl|background|barbase|barbopts|bargap|baropts|black|button|cachesf|ccolor|ccols|chunksize|cint|clab|clevs|clip|clopts|clskip|cmark|cmax|cmin|config|contours|coslat|csmooth|cstyle|cterp|cthick|ctlinfo|datawarn|dbuff|defval|dfile|dialog|dignum|digsize|dims|display|dropmenu|fgvals|files|file|font|frame|fwrite|geotiff|grads|gridln|grid|gxinfo|gxout|hempref|hershey|imprun|kml|lats|lfcols|line|log1d|loopdim|loopincr|looping|lwid|map|mark|mdlopts|missconn|misswarn|mpdraw|mpdset|mproj|mpvals|mpt|parea|poli|polyf|pos|prnopts|rband|rbcols|rbrange|recf|rec|rgb|sdfattr|sdfwrite|shades|shpattr|shpopts|shp|stat|stid|stnprint|strmden|strsiz|string|tile|timelab|title|tlsupp|udct|undef|vpage|vrange2|vrange|warn|wxcols|wxopt|wxsym|xaxis|xflip|xlabs|xlab|xlevs|xlint|xlopts|xlpos|xsize|xyrev|xyzte|yaxis|yflip|ylabs|ylab|ylevs|ylint|ylopts|ylpos|zlog|xy2gr|xy2w|w2xy|w2gr|gr2xy|gr2w)\b
+
 contexts:
   main:
-    - include: expressions
-    - include: old
-
-  expressions:
     - include: comments
+    - include: keywords
+    - include: strings
+    - include: numbers
+    - include: function-definition
+    - include: intrinsics
+    - include: function-calls
+    - include: variables-special
+    - include: operators
 
   comments:
-    - match: (^|;)(\*|#)
-      scope: punctuation.definition.comment.grads
-      push: comment-line-body
+    # Per the parser (gscrpt.c, gsrtyp): a record begins at the start of a line
+    # or immediately after a ';' record separator. If the first character of a
+    # record is '*' or '#', the rest of the line is a comment. Leading
+    # whitespace disqualifies it (the comment check runs before blanks are
+    # skipped), so ';# x' is a comment but '; # x' is not.
+    - match: '^[*#].*$'
+      scope: comment.line.grads
+    - match: '(;)([*#].*)$'
+      captures:
+        1: punctuation.terminator.grads
+        2: comment.line.grads
+    - match: ';'
+      scope: punctuation.terminator.grads
 
-  comment-line-body:
-    - meta_include_prototype: false
-    - meta_scope: comment.line.grads
-    - match: \n
-      pop: 1
-
-  old:
-    - match: \b(say|prompt|pull|if|else|endif|while|endwhile|continue|break|print|exit)\b
+  keywords:
+    # Script keywords are matched after lowcas (gscrpt.c:383 gsrtyp), so they are
+    # case-insensitive: If / Return / Endif / WHILE etc. are all valid.
+    - match: '(?i)\b(?:if|else|endif|while|endwhile|break|continue|return|exit)\b'
       scope: keyword.control.grads
-    - match: \b(If|Else|Endif|While|Endwhile|EndWhile)\b
-      scope: keyword.control-undeclared.grads
-    - include: support
-    - include: expressions-old
-    - match: "'"
-      push: string
-    - match: '"'
-      push: string
-    - match: (\-|\+|\*|/|%)
-      scope: keyword.operator.arithmetic.grads
-    - match: (!|&|\|\|)
-      scope: keyword.operator.logical.grads
-    - match: (=|!=|<=|>=|<>|<|>)
-      scope: keyword.operator.comparison.grads
+    # say / print / prompt write their argument to the terminal as text, so the
+    # following strings are plain (NOT GrADS command strings). 'print' is parsed
+    # as a synonym for 'say' (gscrpt.c, gsrtyp).
+    - match: '(?i)\b(?:say|print|prompt)\b'
+      scope: keyword.control.io.grads
+      push: io-args
+    - match: '(?i)\bpull\b'
+      scope: keyword.control.io.grads
+    - match: '(?i)\bfunction\b'
+      scope: keyword.control.function.grads
 
-  string:
+  # Argument of say / print / prompt: an expression whose strings are plain text.
+  io-args:
+    - match: '(?=;)'
+      pop: true
+    - match: '$'
+      pop: true
+    - include: plain-strings
+    - include: numbers
+    - include: intrinsics
+    - include: function-calls
+    - include: variables-special
+    - include: operators
+
+  plain-strings:
+    - match: "'"
+      scope: punctuation.definition.string.begin.grads
+      push: plain-single
+    - match: '"'
+      scope: punctuation.definition.string.begin.grads
+      push: plain-double
+
+  plain-single:
+    - meta_scope: string.quoted.single.grads
+    - match: "'"
+      scope: punctuation.definition.string.end.grads
+      pop: true
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true
+
+  plain-double:
     - meta_scope: string.quoted.double.grads
-    - match: \\.
-      scope: constant.character.escape.grads
     - match: '"'
+      scope: punctuation.definition.string.end.grads
+      pop: true
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true
+
+  function-definition:
+    # function name(arg, arg, ...) -- 'function' keyword is case-insensitive
+    # (gscrpt.c:383 lowcas); the function name itself is case-sensitive.
+    - match: '(?i)\b(function)\s+({{identifier}})'
+      captures:
+        1: keyword.control.function.grads
+        2: entity.name.function.grads
+
+  numbers:
+    - match: '(?<![\w.])[-+]?(?:\d+\.\d*|\.\d+|\d+)\b'
+      scope: constant.numeric.grads
+
+  variables-special:
+    # Predefined script variables set after every GrADS command.
+    - match: '\b(?:rc|result)\b'
+      scope: support.constant.grads
+    # Internal coordinate variables.
+    - match: '\b(?:lat|lon|lev)\b'
+      scope: variable.language.grads
+    # Global variables begin with an underscore and persist across the script.
+    # They may be compound (arrays): _name.idx.idx... (gsrvar, gscrpt.c:2047).
+    - match: '(?<![\w]){{identifier_global}}'
+      scope: variable.other.global.grads
+      push: compound-subscripts
+    # Regular compound (array) variable: a name followed by '.index' segments.
+    - match: '\b{{identifier}}(?=\.)'
+      scope: variable.other.grads
+      push: compound-subscripts
+
+  # Subscript segments of a compound (array) variable, separated by dots
+  # (gscrpt.c gsrvar). Each index is a variable name to substitute or a literal.
+  compound-subscripts:
+    - match: '\.'
+      scope: punctuation.accessor.grads
+    - match: '{{identifier}}'
+      scope: variable.other.member.grads
+    - match: '[0-9]+'
+      scope: constant.numeric.grads
+    - match: ''
+      pop: true
+
+  intrinsics:
+    - match: '{{intrinsic_functions}}\s*(?=\()'
+      scope: support.function.intrinsic.grads
+
+  grads-functions:
+    - match: '{{grads_functions}}'
+      scope: support.function.builtin.grads
+
+  # Operators inside data expressions (only included in the *-expr contexts, so
+  # '=', '()', '-' etc. stay literal in draw-string text and other commands).
+  # Derived from gaexpr.c: arithmetic (line 158) and comparison/logical
+  # operators (lines 179-212). Lone '!' is not a valid operator (only '!=').
+  grads-operators:
+    - match: '==|!=|<=|>=|\|\||&&|[<>=|&]'
+      scope: keyword.operator.logical.grads
+    - match: '[-+*/]'
+      scope: keyword.operator.arithmetic.grads
+    - match: '[()]'
+      scope: punctuation.section.parens.grads
+    - match: ','
+      scope: punctuation.separator.grads
+
+  # GrADS backtick formatting codes used inside drawn text (draw string / title /
+  # xlab / ...). Derived from src/gxchpl.c (gxchpl): `f## selects a 2-digit font,
+  # `0..`9 a 1-digit font, `a/`b superscript/subscript, `n normal.
+  grads-escape:
+    # Degree symbol: a period drawn in font 3 (the symbol font). The '.' is the
+    # rendered glyph, not literal text, so `3. is one escape unit. Must precede
+    # the general `<digit> rule so the trailing '.' is consumed here.
+    # (doc/fontcontrol.html: "draw a degree symbol by drawing a period with
+    # font number 3 (`3.)")
+    - match: '`3\.'
+      scope: constant.character.escape.grads
+    - match: '`(?:f[0-9]{2}|[0-9]|[abn])'
+      scope: constant.character.escape.grads
+
+  function-calls:
+    - match: '\b({{identifier}})\s*(?=\()'
+      scope: variable.function.grads
+
+  operators:
+    - match: '!=|>=|<=|&&|\|\||[-+*/%=<>!&|]'
+      scope: keyword.operator.grads
+
+  # --- Strings -------------------------------------------------------------
+  # Strings issued as statements are submitted to GrADS as commands, so the
+  # first word (and the set/draw/query sub-option) get command highlighting.
+  strings:
+    - match: "'"
+      scope: punctuation.definition.string.begin.grads
+      push: single-quoted-command
+    - match: '"'
+      scope: punctuation.definition.string.begin.grads
+      push: double-quoted-command
+
+  single-quoted-command:
+    - meta_scope: string.quoted.single.grads
+    - include: string-single-end
+    - match: '\s+'
+    # Shell escape: a command starting with '!' is passed to the shell via
+    # system() (gauser.c:156). The shell command may be built by concatenating
+    # several quoted segments, so stay in shell mode across the concatenation.
+    - match: '!'
+      scope: keyword.control.shell.grads punctuation.definition.shell.grads
+      set: single-quoted-shell
+    # Implied define (gauser.c:106): a name (letters+digits, <=16 chars) followed
+    # by '=' is shorthand for 'define name = expr'. The command is lowercased
+    # first (gauser.c:100 lowcas), so the name may be upper, lower, or mixed case
+    # (no underscore). The right-hand side is a data expression, so route it
+    # through the expression highlighter.
+    - match: '([A-Za-z][A-Za-z0-9]{0,15})\s*(=)'
+      captures:
+        1: variable.other.grads
+        2: keyword.operator.assignment.grads
+      set: single-quoted-expr
+    - match: '{{expr_command_verbs}}'
+      scope: support.function.command.grads
+      set: single-quoted-expr
+    - match: '{{command_verbs}}'
+      scope: support.function.command.grads
+      set: single-quoted-options
+    - match: '(?=\S)'
+      set: single-quoted-body
+
+  single-quoted-expr:
+    - meta_scope: string.quoted.single.grads
+    - include: grads-escape
+    - include: grads-functions
+    - include: grads-operators
+    # On close, stay in expression mode: a GrADS data expression is often built by
+    # concatenating several quoted segments with script variables between them
+    # (e.g. 'sum(const('var'*0+1,0,-u),...)'), and the whole thing is one command.
+    - match: "'"
+      scope: punctuation.definition.string.end.grads
+      set: expr-continuation
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true
+
+  # Between concatenated expression segments: script-level code (variables,
+  # operators, function calls). Re-enters expression mode at the next quote, and
+  # ends the statement at a ';' separator or end of line.
+  expr-continuation:
+    - match: '(?=;)'
+      pop: true
+    - match: '$'
       pop: true
     - match: "'"
-      pop: true
-    - match: "\n"
+      scope: punctuation.definition.string.begin.grads
+      set: single-quoted-expr
+    - match: '"'
+      scope: punctuation.definition.string.begin.grads
+      set: double-quoted-expr
+    - include: numbers
+    - include: intrinsics
+    - include: function-calls
+    - include: variables-special
+    - include: operators
+
+  # A '!'-shell segment. The full shell command is usually built by concatenating
+  # several quoted segments with script variables between them, and the variables'
+  # runtime values are unknown, so the fragments can't be reassembled into one
+  # coherent shell line. Rather than embed bash (which would restart its parser on
+  # every fragment and mis-highlight pieces like ' -i '), give the whole shell
+  # command a single uniform scope; the interpolated script variables stand out
+  # between the segments.
+  single-quoted-shell:
+    - meta_content_scope: string.unquoted.shell.grads
+    - match: "'"
+      scope: punctuation.definition.string.end.grads
+      set: shell-continuation
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
       pop: true
 
-  support:
-    - match: (?i)\b(sqrt|sin|cos|tan|asin|acos|exp|log|log10|abs|if|pow|ave|mag|atan2|hdivg|hcurl|vint|tloop|eloop|aave|scorr|tcorr|tmave|maskout|gr2stn|tvrh2q|tvrh2t|gint|oacres|oabin|smth9|stnave|stnmin|stnmax|skip|const|cdiff|mean|amean|sum|sumg|asum|asumg|atot|grarea|coll2gr|min|max|minloc|maxloc|fndlvl|sregr|tregr|s2g1d|lterp|amin|amax|aminlocx|aminlocy|amaxlocx|amaxlocy)\b
-      scope: support.function.grads
-    - match: (?i)\b(strlen|sublin|subwrd|substr|read|write|close|sys|function)\b
-      scope: support.function.intrinsic.grads
-    - match: (?i)\b(gsfallow|gsfpath)\b
-      scope: support.function.others
-    - match: (?i)\b(math_(log|log10|cos|sin|tan|atan|atan2|sqrt|abs|acosh|asinh|atanh|cosh|sinh|exp|fmod|pow|tanh|acos|asin|format|nint|int|mod|strlen)|valnum|wrdpos)\b
-      scope: support.function.math.grads
-    - match: (?i)\b(query|q|set|swap|draw)\b
-      scope: support.function.commands.grads
+  double-quoted-shell:
+    - meta_content_scope: string.unquoted.shell.grads
+    - match: '"'
+      scope: punctuation.definition.string.end.grads
+      set: shell-continuation
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true
 
-  expressions-old:
-    - match: \b(return)\b
-      scope: keyword.control.grads
-    - match: \b(Return)\b
-      scope: keyword.control-undeclared.grads
+  # Between concatenated shell segments: script-level code (variables etc.).
+  # Re-enters shell mode at the next quote; ends at ';' or end of line.
+  shell-continuation:
+    - match: '(?=;)'
+      pop: true
+    - match: '$'
+      pop: true
+    - match: "'"
+      scope: punctuation.definition.string.begin.grads
+      set: single-quoted-shell
+    - match: '"'
+      scope: punctuation.definition.string.begin.grads
+      set: double-quoted-shell
+    - include: numbers
+    - include: intrinsics
+    - include: function-calls
+    - include: variables-special
+    - include: operators
+
+  single-quoted-options:
+    - meta_scope: string.quoted.single.grads
+    - include: string-single-end
+    - match: '\s+'
+    - match: '{{command_options}}'
+      scope: keyword.other.command-option.grads
+      set: single-quoted-body
+    - match: '(?=\S)'
+      set: single-quoted-body
+
+  single-quoted-body:
+    - meta_scope: string.quoted.single.grads
+    - include: grads-escape
+    - include: grads-functions
+    - include: string-single-end
+
+  string-single-end:
+    - match: "'"
+      scope: punctuation.definition.string.end.grads
+      pop: true
+    # A GrADS record ends at the newline unconditionally (gscrpt.c gsrtyp), so a
+    # string cannot span lines. An unterminated quote yields a "Non-terminated
+    # constant" error (gscrpt.c gscnst) -- flag it and stop at end of line.
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true
+
+  double-quoted-command:
+    - meta_scope: string.quoted.double.grads
+    - include: string-double-end
+    - match: '\s+'
+    # Shell escape (gauser.c:156); see single-quoted-command.
+    - match: '!'
+      scope: keyword.control.shell.grads punctuation.definition.shell.grads
+      set: double-quoted-shell
+    # Implied define (gauser.c:106); see single-quoted-command.
+    - match: '([A-Za-z][A-Za-z0-9]{0,15})\s*(=)'
+      captures:
+        1: variable.other.grads
+        2: keyword.operator.assignment.grads
+      set: double-quoted-expr
+    - match: '{{expr_command_verbs}}'
+      scope: support.function.command.grads
+      set: double-quoted-expr
+    - match: '{{command_verbs}}'
+      scope: support.function.command.grads
+      set: double-quoted-options
+    - match: '(?=\S)'
+      set: double-quoted-body
+
+  double-quoted-expr:
+    - meta_scope: string.quoted.double.grads
+    - include: grads-escape
+    - include: grads-functions
+    - include: grads-operators
+    # See single-quoted-expr: stay in expression mode across concatenation.
+    - match: '"'
+      scope: punctuation.definition.string.end.grads
+      set: expr-continuation
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true
+
+  double-quoted-options:
+    - meta_scope: string.quoted.double.grads
+    - include: string-double-end
+    - match: '\s+'
+    - match: '{{command_options}}'
+      scope: keyword.other.command-option.grads
+      set: double-quoted-body
+    - match: '(?=\S)'
+      set: double-quoted-body
+
+  double-quoted-body:
+    - meta_scope: string.quoted.double.grads
+    - include: grads-escape
+    - include: grads-functions
+    - include: string-double-end
+
+  string-double-end:
+    - match: '"'
+      scope: punctuation.definition.string.end.grads
+      pop: true
+    # See string-single-end: records never span lines, so an unterminated
+    # double-quoted constant is an error confined to its line.
+    - match: '$'
+      scope: invalid.illegal.unterminated-string.grads
+      pop: true

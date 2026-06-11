@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<!--
+		  Enables the Toggle Comment shortcut (Ctrl+/ on Linux/Windows, Cmd+/ on
+		  macOS) for GrADS scripts.
+
+		  GrADS line comments start with '*' or '#' (see src/gscrpt.c, gsrtyp).
+		  '*' is used as the primary marker because it is the traditional GrADS
+		  comment character; '#' is also recognized so existing '#' comments are
+		  toggled off correctly.
+
+		  NOTE: the GrADS parser only treats '*'/'#' as a comment when it is the
+		  first character of a line (column 0) or immediately after a ';'. Sublime's
+		  Toggle Comment inserts the marker at the line's indentation level, so on
+		  indented lines you may want the marker at column 0 to be a valid comment.
+		-->
+		<key>name</key>
+		<string>GrADS Comments</string>
 		<key>scope</key>
 		<string>source.grads</string>
 		<key>settings</key>
