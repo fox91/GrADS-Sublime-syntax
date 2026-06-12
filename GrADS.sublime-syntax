@@ -49,10 +49,12 @@ variables:
 contexts:
   main:
     - include: comments
+    # function-definition must precede keywords: otherwise the bare 'function'
+    # keyword rule consumes 'function' and the name is mis-scoped as a call.
+    - include: function-definition
     - include: keywords
     - include: strings
     - include: numbers
-    - include: function-definition
     - include: intrinsics
     - include: function-calls
     - include: variables-special
