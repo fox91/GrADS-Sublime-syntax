@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Show GrADS function definitions in Goto Symbol (Ctrl+R) and, project
+	     wide, in Goto Definition / Goto Symbol in Project (Ctrl+Shift+R). -->
+	<key>name</key>
+	<string>Symbol List: Function</string>
+	<key>scope</key>
+	<string>source.grads entity.name.function.grads</string>
+	<key>settings</key>
+	<dict>
+		<key>showInSymbolList</key>
+		<integer>1</integer>
+		<key>showInIndexedSymbolList</key>
+		<integer>1</integer>
+	</dict>
+</dict>
+</plist>
