@@ -49,3 +49,41 @@ _a.i.1 = 5
 * ^ punctuation.accessor.grads
 *  ^ variable.other.member.grads
 *    ^ constant.numeric.grads
+'d ugrdprs(lev=700)'
+*          ^^^ keyword.other.dimension.grads
+*             ^ keyword.operator.logical.grads
+'d ave(u,t=1,z+1)'
+*        ^ keyword.other.dimension.grads
+*            ^ keyword.other.dimension.grads
+*             ^ keyword.operator.arithmetic.grads
+'d u(t-1)'
+*   ^ punctuation.section.parens.grads
+*    ^ keyword.other.dimension.grads
+*     ^ keyword.operator.arithmetic.grads
+
+* Selectors are anchored to a '(' or ',' position, so at top level 't-1' is
+* variable arithmetic and 't' is NOT scoped as a dimension.
+'d t-1'
+*  ^ string.quoted.single.grads
+*   ^ keyword.operator.arithmetic.grads
+
+* A grouping paren is not preceded by an identifier, so '(t-1)' is excluded:
+* 't' is variable arithmetic, not a dimension selector.
+'d (t-1)*2'
+*   ^ string.quoted.single.grads
+
+* A known function consumes its '(', so its first argument is an expression,
+* not a dimension: 't' in log(t-1) is variable arithmetic, not a selector.
+* (An unknown/user function is treated like a variable -- a rare exception.)
+'d log(t-1)'
+*  ^^^ support.function.builtin.grads
+*      ^ string.quoted.single.grads
+*       ^ keyword.operator.arithmetic.grads
+
+* Documented limitation: an unknown/user function is not in the built-in list,
+* so 'myfunc(t-1)' is treated like a variable modifier and 't' is (mis)scoped
+* as a dimension. Built-in functions like log() are handled correctly above.
+'d myfunc(t-1)'
+*  ^^^^^^ string.quoted.single.grads
+*         ^ keyword.other.dimension.grads
+*          ^ keyword.operator.arithmetic.grads

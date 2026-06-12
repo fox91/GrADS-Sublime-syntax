@@ -36,10 +36,16 @@ variables:
   # GrADS built-in expression / grid functions. These are used *inside* command
   # strings (e.g. 'd ave(ts,t=1,t=10)'), evaluated by the GrADS expression
   # engine, not the script interpreter. Derived from the dispatch table in
-  # src/gafunc.c (rtnprs). Case-insensitive: the command is lowercased before the
-  # expression is evaluated (gauser.c:100), so EXP, Log10, MaskOut etc. are valid.
+  # src/gafunc.c (rtnprs). Names only; the context adds the case-insensitive flag
+  # and the trailing '(' (the command is lowercased before evaluation, gauser.c:100).
   grads_functions: |-
-    (?i)\b(?:log10|log|sqrt|sin|cos|tan|asin|acos|exp|abs|if|pow|aave|ave|mag|atan2|hdivg|hcurl|vint|tloop|eloop|scorr|tcorr|tmave|maskout|gr2stn|tvrh2q|tvrh2t|gint|oacres|oabin|smth9|stnave|stnmin|stnmax|skip|const|cdiff|amean|mean|sumg|sum|asumg|asum|atot|grarea|coll2gr|minloc|maxloc|min|max|fndlvl|sregr|tregr|s2g1d|lterp|aminlocx|aminlocy|amaxlocx|amaxlocy|amin|amax)(?=\s*\()
+    log10|log|sqrt|sin|cos|tan|asin|acos|exp|abs|if|pow|aave|ave|mag|atan2|hdivg|hcurl|vint|tloop|eloop|scorr|tcorr|tmave|maskout|gr2stn|tvrh2q|tvrh2t|gint|oacres|oabin|smth9|stnave|stnmin|stnmax|skip|const|cdiff|amean|mean|sumg|sum|asumg|asum|atot|grarea|coll2gr|minloc|maxloc|min|max|fndlvl|sregr|tregr|s2g1d|lterp|aminlocx|aminlocy|amaxlocx|amaxlocy|amin|amax
+
+  # Dimension selector names used in variable/function expressions, e.g.
+  # ugrdprs(lev=700) or ave(u,t=1,t=10). Full list from gautil.c:861-878
+  # ("x/y/z/t/offt/e/lat/lon/lev/time/ens", plus 'r' for station radius).
+  dimension_names: |-
+    offt|time|lon|lat|lev|ens|x|y|z|t|e|r
 
   # Sub-options for set / draw / query commands (second word). Case-insensitive
   # for the same reason as command_verbs (gauser.c:100 lowcas).
@@ -176,8 +182,30 @@ contexts:
       scope: support.function.intrinsic.grads
 
   grads-functions:
-    - match: '{{grads_functions}}'
-      scope: support.function.builtin.grads
+    # A function call consumes its '(' so the first argument -- always a data
+    # expression, never a dimension (gafunc.c: only some functions take dimension
+    # args, and never as the first one) -- is not mistaken for a variable's
+    # dimension modifier. Case-insensitive (gauser.c:100 lowcas).
+    - match: '(?i)\b({{grads_functions}})\b(\s*)(\()'
+      captures:
+        1: support.function.builtin.grads
+        3: punctuation.section.parens.grads
+
+  # Dimension expressions only appear inside () -- as variable modifiers or
+  # function args (gaexpr.c:997,1404) -- so the selector is anchored to a '(' or
+  # ',' position and must be followed by =value, +offset, or -offset
+  # (gautil.c:813). The '(' must be a variable's modifier paren, i.e. immediately
+  # preceded by an identifier character, which excludes grouping parens like
+  # (t-1). This keeps a top-level 't-1' (variable arithmetic) untouched.
+  grads-dimensions:
+    - match: '(?i)(?<=[A-Za-z0-9_])(\()(\s*)\b({{dimension_names}})\b(?=\s*[-+=])'
+      captures:
+        1: punctuation.section.parens.grads
+        3: keyword.other.dimension.grads
+    - match: '(?i)(,)(\s*)\b({{dimension_names}})\b(?=\s*[-+=])'
+      captures:
+        1: punctuation.separator.grads
+        3: keyword.other.dimension.grads
 
   # Operators inside data expressions (only included in the *-expr contexts, so
   # '=', '()', '-' etc. stay literal in draw-string text and other commands).
@@ -259,6 +287,7 @@ contexts:
     - meta_scope: string.quoted.single.grads
     - include: grads-escape
     - include: grads-functions
+    - include: grads-dimensions
     - include: grads-operators
     # On close, stay in expression mode: a GrADS data expression is often built by
     # concatenating several quoted segments with script variables between them
@@ -388,6 +417,7 @@ contexts:
     - meta_scope: string.quoted.double.grads
     - include: grads-escape
     - include: grads-functions
+    - include: grads-dimensions
     - include: grads-operators
     # See single-quoted-expr: stay in expression mode across concatenation.
     - match: '"'
