@@ -51,6 +51,20 @@ git clone https://github.com/fox91/GrADS-Sublime-syntax.git GrADS
 Then open a `.gs` / `.gsf` file (or pick **View → Syntax → GrADS Script**) to
 activate it.
 
+## Developing
+
+The grammar lives in `GrADS.sublime-syntax`; scope assignments are covered by
+syntax tests in `tests/syntax_test_grads.gs`.
+
+To run the tests, place the repository in your Sublime Text packages folder as a
+folder named `GrADS` (so the test header's `Packages/GrADS/…` path resolves),
+open `tests/syntax_test_grads.gs`, and run **Tools → Build** (`Ctrl+B` /
+`Cmd+B`). Results appear in the output panel; press `F4` to jump to a failure.
+
+The same tests run on every push and pull request via GitHub Actions
+(`.github/workflows/syntax.yml`, using
+[`syntax-test-action`](https://github.com/SublimeText/syntax-test-action)).
+
 ## License
 
 [MIT](LICENSE) © Andrea Falco
