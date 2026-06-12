@@ -1,0 +1,321 @@
+{
+    "scope": "source.grads",
+    "completions": [
+        {
+            "trigger": "if\tif/endif",
+            "contents": "if (${1:condition})\n\t${0}\nendif"
+        },
+        {
+            "trigger": "ifelse\tif/else/endif",
+            "contents": "if (${1:condition})\n\t${2}\nelse\n\t${0}\nendif"
+        },
+        {
+            "trigger": "while\twhile/endwhile",
+            "contents": "while (${1:condition})\n\t${0}\nendwhile"
+        },
+        {
+            "trigger": "function\tdefinition",
+            "contents": "function ${1:name}(${2:args})\n\t${0}\nreturn"
+        },
+        {
+            "trigger": "say\tstatement",
+            "contents": "say ${0}"
+        },
+        {
+            "trigger": "close\tintrinsic",
+            "contents": "close(${1:filename})"
+        },
+        {
+            "trigger": "gsfallow\tintrinsic",
+            "contents": "gsfallow(\"${1:on}\")"
+        },
+        {
+            "trigger": "gsfpath\tintrinsic",
+            "contents": "gsfpath(\"${1:dirlist}\")"
+        },
+        {
+            "trigger": "read\tintrinsic",
+            "contents": "read(${1:filename})"
+        },
+        {
+            "trigger": "strlen\tintrinsic",
+            "contents": "strlen(${1:string})"
+        },
+        {
+            "trigger": "sublin\tintrinsic",
+            "contents": "sublin(${1:string}, ${2:n})"
+        },
+        {
+            "trigger": "substr\tintrinsic",
+            "contents": "substr(${1:string}, ${2:start}, ${3:length})"
+        },
+        {
+            "trigger": "subwrd\tintrinsic",
+            "contents": "subwrd(${1:string}, ${2:n})"
+        },
+        {
+            "trigger": "sys\tintrinsic",
+            "contents": "sys(${1:command})"
+        },
+        {
+            "trigger": "valnum\tintrinsic",
+            "contents": "valnum(${1:string})"
+        },
+        {
+            "trigger": "wrdpos\tintrinsic",
+            "contents": "wrdpos(${1:string}, ${2:n})"
+        },
+        {
+            "trigger": "write\tintrinsic",
+            "contents": "write(${1:filename}, ${2:record})"
+        },
+        {
+            "trigger": "aave\tfunction",
+            "contents": "aave(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "abs\tfunction",
+            "contents": "abs(${1:expr})"
+        },
+        {
+            "trigger": "acos\tfunction",
+            "contents": "acos(${1:expr})"
+        },
+        {
+            "trigger": "amax\tfunction",
+            "contents": "amax(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "amaxlocx\tfunction",
+            "contents": "amaxlocx(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "amaxlocy\tfunction",
+            "contents": "amaxlocy(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "amean\tfunction",
+            "contents": "amean(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "amin\tfunction",
+            "contents": "amin(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "aminlocx\tfunction",
+            "contents": "aminlocx(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "aminlocy\tfunction",
+            "contents": "aminlocy(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "asin\tfunction",
+            "contents": "asin(${1:expr})"
+        },
+        {
+            "trigger": "asum\tfunction",
+            "contents": "asum(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "asumg\tfunction",
+            "contents": "asumg(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "atan2\tfunction",
+            "contents": "atan2(${1:expr1}, ${2:expr2})"
+        },
+        {
+            "trigger": "atot\tfunction",
+            "contents": "atot(${1:expr}, ${2:lon=0}, ${3:lon=360}, ${4:lat=-90}, ${5:lat=90})"
+        },
+        {
+            "trigger": "ave\tfunction",
+            "contents": "ave(${1:expr}, ${2:t=1}, ${3:t=10})"
+        },
+        {
+            "trigger": "cdiff\tfunction",
+            "contents": "cdiff(${1:expr}, ${2:dim})"
+        },
+        {
+            "trigger": "coll2gr\tfunction",
+            "contents": "coll2gr(${1:n}, ${2:undef})"
+        },
+        {
+            "trigger": "const\tfunction",
+            "contents": "const(${1:expr}, ${2:value})"
+        },
+        {
+            "trigger": "cos\tfunction",
+            "contents": "cos(${1:expr})"
+        },
+        {
+            "trigger": "eloop\tfunction",
+            "contents": "eloop(${1:expr})"
+        },
+        {
+            "trigger": "exp\tfunction",
+            "contents": "exp(${1:expr})"
+        },
+        {
+            "trigger": "fndlvl\tfunction",
+            "contents": "fndlvl(${1:expr}, ${2:value})"
+        },
+        {
+            "trigger": "gint\tfunction",
+            "contents": "gint(${1:expr})"
+        },
+        {
+            "trigger": "gr2stn\tfunction",
+            "contents": "gr2stn(${1:gridexpr}, ${2:stnexpr})"
+        },
+        {
+            "trigger": "grarea\tfunction",
+            "contents": "grarea(${1:expr})"
+        },
+        {
+            "trigger": "hcurl\tfunction",
+            "contents": "hcurl(${1:u}, ${2:v})"
+        },
+        {
+            "trigger": "hdivg\tfunction",
+            "contents": "hdivg(${1:u}, ${2:v})"
+        },
+        {
+            "trigger": "if\tfunction",
+            "contents": "if(${1:expr}, ${2:>}, ${3:value})"
+        },
+        {
+            "trigger": "log\tfunction",
+            "contents": "log(${1:expr})"
+        },
+        {
+            "trigger": "log10\tfunction",
+            "contents": "log10(${1:expr})"
+        },
+        {
+            "trigger": "lterp\tfunction",
+            "contents": "lterp(${1:expr}, ${2:grid})"
+        },
+        {
+            "trigger": "mag\tfunction",
+            "contents": "mag(${1:u}, ${2:v})"
+        },
+        {
+            "trigger": "maskout\tfunction",
+            "contents": "maskout(${1:expr}, ${2:mask})"
+        },
+        {
+            "trigger": "max\tfunction",
+            "contents": "max(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "maxloc\tfunction",
+            "contents": "maxloc(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "mean\tfunction",
+            "contents": "mean(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "min\tfunction",
+            "contents": "min(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "minloc\tfunction",
+            "contents": "minloc(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "oabin\tfunction",
+            "contents": "oabin(${1:gridexpr}, ${2:stnexpr})"
+        },
+        {
+            "trigger": "oacres\tfunction",
+            "contents": "oacres(${1:gridexpr}, ${2:stnexpr})"
+        },
+        {
+            "trigger": "pow\tfunction",
+            "contents": "pow(${1:expr}, ${2:n})"
+        },
+        {
+            "trigger": "s2g1d\tfunction",
+            "contents": "s2g1d(${1:stnexpr})"
+        },
+        {
+            "trigger": "scorr\tfunction",
+            "contents": "scorr(${1:expr1}, ${2:expr2})"
+        },
+        {
+            "trigger": "sin\tfunction",
+            "contents": "sin(${1:expr})"
+        },
+        {
+            "trigger": "skip\tfunction",
+            "contents": "skip(${1:expr}, ${2:xskip})"
+        },
+        {
+            "trigger": "smth9\tfunction",
+            "contents": "smth9(${1:expr})"
+        },
+        {
+            "trigger": "sqrt\tfunction",
+            "contents": "sqrt(${1:expr})"
+        },
+        {
+            "trigger": "sregr\tfunction",
+            "contents": "sregr(${1:Y}, ${2:X})"
+        },
+        {
+            "trigger": "stnave\tfunction",
+            "contents": "stnave(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "stnmax\tfunction",
+            "contents": "stnmax(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "stnmin\tfunction",
+            "contents": "stnmin(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "sum\tfunction",
+            "contents": "sum(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "sumg\tfunction",
+            "contents": "sumg(${1:expr}, ${2:dim1}, ${3:dim2})"
+        },
+        {
+            "trigger": "tan\tfunction",
+            "contents": "tan(${1:expr})"
+        },
+        {
+            "trigger": "tcorr\tfunction",
+            "contents": "tcorr(${1:expr1}, ${2:expr2}, ${3:t=1}, ${4:t=10})"
+        },
+        {
+            "trigger": "tloop\tfunction",
+            "contents": "tloop(${1:expr})"
+        },
+        {
+            "trigger": "tmave\tfunction",
+            "contents": "tmave(${1:expr}, ${2:t=1}, ${3:t=10})"
+        },
+        {
+            "trigger": "tregr\tfunction",
+            "contents": "tregr(${1:Y}, ${2:X}, ${3:t=1}, ${4:t=10})"
+        },
+        {
+            "trigger": "tvrh2q\tfunction",
+            "contents": "tvrh2q(${1:tv}, ${2:rh}, ${3:p})"
+        },
+        {
+            "trigger": "tvrh2t\tfunction",
+            "contents": "tvrh2t(${1:tv}, ${2:rh}, ${3:p})"
+        },
+        {
+            "trigger": "vint\tfunction",
+            "contents": "vint(${1:bottom}, ${2:expr}, ${3:factor})"
+        }
+    ]
+}
