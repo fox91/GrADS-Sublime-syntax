@@ -17,7 +17,7 @@
 		  indented lines you may want the marker at column 0 to be a valid comment.
 		-->
 		<key>name</key>
-		<string>GrADS Comments</string>
+		<string>Comments</string>
 		<key>scope</key>
 		<string>source.grads</string>
 		<key>settings</key>
